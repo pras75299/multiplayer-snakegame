@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { GameBoardProps, Point, Direction } from '../types';
-
+const foodIcons = ['🍌', '🍓', '🥭', '🍍', '🍎', '🍊', '🍇'];
 const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   const [score, setScore] = useState<number>(0);
   const [speed, setSpeed] = useState<number>(600);
@@ -11,7 +11,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
     { x: 2, y: 2 },
     { x: 2, y: 3 },
   ]);
-  const [food, setFood] = useState<Point>({ x: 5, y: 5 });
+  const [food, setFood] = useState<{ position: Point; icon: any }>({
+    position: { x: 5, y: 5 },
+    icon: foodIcons[0], // Start with the first image initially or randomize it
+  });
   const [direction, setDirection] = useState<Direction>(Direction.Right);
 
   useEffect(() => {
@@ -49,6 +52,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   };
 
   const gameOver = () => {
+    // alert('Game is over');
     setGameActive(false);
   };
 
@@ -77,7 +81,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
       let newSnake = [newHead, ...snake.slice(0, -1)];
 
-      if (newHead.x === food.x && newHead.y === food.y) {
+      if (newHead.x === food.position.x && newHead.y === food.position.y) {
         newSnake = [newHead, ...snake];
         placeFood();
         setScore((currentScore) => {
@@ -101,7 +105,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
         gameOver();
       } else {
         const newSnake = [newHead, ...snake];
-        if (newHead.x === food.x && newHead.y === food.y) {
+        if (newHead.x === food.position.x && newHead.y === food.position.y) {
           placeFood();
         } else {
           newSnake.pop();
@@ -115,28 +119,32 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   }, [snake, direction, food, boardSize, speed]);
 
   const placeFood = () => {
-    let newFood: Point;
+    let newFoodPosition: Point;
+    let newFoodIcon = foodIcons[Math.floor(Math.random() * foodIcons.length)]; // Randomly select an emoji
     do {
-      newFood = {
+      newFoodPosition = {
         x: Math.floor(Math.random() * boardSize),
         y: Math.floor(Math.random() * boardSize),
       };
     } while (
-      snake.some((part) => part.x === newFood.x && part.y === newFood.y)
+      snake.some(
+        (part) => part.x === newFoodPosition.x && part.y === newFoodPosition.y
+      )
     );
-    setFood(newFood);
+
+    setFood({ position: newFoodPosition, icon: newFoodIcon });
   };
 
-  const getCellStyle = (x: number, y: number): React.CSSProperties => {
+  const getCellStyle = (x: number, y: number): string => {
     const isSnake = snake.some((part) => part.x === x && part.y === y);
-    const isFood = food.x === x && food.y === y;
+    const isFood = food.position.x === x && food.position.y === y;
 
-    return {
-      width: '30px',
-      height: '30px',
-      backgroundColor: isSnake ? 'green' : isFood ? 'red' : 'white',
-      border: '1px solid black',
-    };
+    if (isFood) {
+      return food.icon;
+    } else if (isSnake) {
+      return '🐍'; // Optionally, use an emoji or some mark for the snake as well
+    }
+    return '';
   };
 
   return (
@@ -161,7 +169,19 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
         {Array.from({ length: boardSize }, (_, y) => (
           <div key={y} style={{ display: 'flex' }}>
             {Array.from({ length: boardSize }, (_, x) => (
-              <div key={x} style={getCellStyle(x, y)} />
+              <div
+                key={x}
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: '1px solid black',
+                }}
+              >
+                {getCellStyle(x, y)}
+              </div>
             ))}
           </div>
         ))}

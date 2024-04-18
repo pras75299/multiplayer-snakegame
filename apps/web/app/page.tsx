@@ -12,7 +12,7 @@ export default function Page() {
         Multiplayer Snake Game
       </h1>
       <section className="flex justify-center flex-col items-center">
-        <GameBoard boardSize={18} snake={snake} food={food} />
+        <GameBoard boardSize={23} snake={snake} food={food} />
       </section>
     </>
   );
