@@ -4,6 +4,9 @@ import { GameBoardProps, Point, Direction } from '../types';
 
 const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   const [score, setScore] = useState<number>(0);
+  const [speed, setSpeed] = useState<number>(600);
+  const [gameActive, setGameActive] = useState<boolean>(false);
+
   const [snake, setSnake] = useState<Point[]>([
     { x: 2, y: 2 },
     { x: 2, y: 3 },
@@ -33,6 +36,22 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [direction]);
 
+  const startGame = () => {
+    setGameActive(true);
+    setSnake([
+      { x: 2, y: 2 },
+      { x: 2, y: 3 },
+    ]); // Reset snake to initial position
+    setDirection(Direction.Right); // Reset initial direction
+    setScore(0); // Reset score
+    setSpeed(600); // Reset speed
+    placeFood();
+  };
+
+  const gameOver = () => {
+    setGameActive(false);
+  };
+
   useEffect(() => {
     const moveSnake = () => {
       // Clone the head to create a new head
@@ -60,13 +79,18 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
       if (newHead.x === food.x && newHead.y === food.y) {
         newSnake = [newHead, ...snake];
-        placeFood(); // Place new food because the current one was eaten
-        setScore((currentScore) => currentScore + 10); // Increase score by 10
+        placeFood();
+        setScore((currentScore) => {
+          const newScore = currentScore + 10;
+          if (newScore % 50 === 0 && speed > 200) {
+            setSpeed((currentSpeed) => Math.max(currentSpeed - 100, 200));
+          }
+          return newScore;
+        });
       } else {
-        newSnake.pop(); // Remove the tail unless food has been eaten
+        newSnake.pop();
       }
 
-      // Check for collisions with walls or self
       if (
         newHead.x < 0 ||
         newHead.x >= boardSize ||
@@ -74,13 +98,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
         newHead.y >= boardSize ||
         snake.some((part) => part.x === newHead.x && part.y === newHead.y)
       ) {
-        setSnake([
-          { x: 2, y: 2 },
-          { x: 2, y: 3 },
-        ]); // Reset snake
-        setDirection(Direction.Right); // Reset direction
-        placeFood(); // Place new food
-        setScore(0); // Reset score
+        gameOver();
       } else {
         const newSnake = [newHead, ...snake];
         if (newHead.x === food.x && newHead.y === food.y) {
@@ -92,9 +110,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
       }
     };
 
-    const intervalId = setInterval(moveSnake, 200);
+    const intervalId = setInterval(moveSnake, speed);
     return () => clearInterval(intervalId);
-  }, [snake, direction, food, boardSize]);
+  }, [snake, direction, food, boardSize, speed]);
 
   const placeFood = () => {
     let newFood: Point;
@@ -123,7 +141,16 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
   return (
     <>
+      {!gameActive && (
+        <button
+          onClick={startGame}
+          style={{ marginBottom: '20px', backgroundColor: 'red' }}
+        >
+          Start Game
+        </button>
+      )}
       <h2 className="flex">Score: {score}</h2>
+      <h4>Speed: {speed}ms per move</h4>
       <div
         style={{
           display: 'flex',

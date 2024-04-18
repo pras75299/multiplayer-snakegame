@@ -1,11 +1,18 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+     "lib": ["dom", "dom.iterable", "esnext"],
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "baseUrl": "./", // this should be set to the root of your src directory
+    "paths": {
+      "*": ["app/*"],
+      "@utils/*": ["app/utils/*"],
+      "@ui/*": ["app/ui/*"] // adjust according to your structure
+    }
   },
   "include": [
     "next-env.d.ts",
