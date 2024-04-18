@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { GameBoardProps, Point, Direction } from '../types';
 
 const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
+  const [score, setScore] = useState<number>(0);
   const [snake, setSnake] = useState<Point[]>([
     { x: 2, y: 2 },
     { x: 2, y: 3 },
@@ -55,6 +56,16 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
           break;
       }
 
+      let newSnake = [newHead, ...snake.slice(0, -1)];
+
+      if (newHead.x === food.x && newHead.y === food.y) {
+        newSnake = [newHead, ...snake];
+        placeFood(); // Place new food because the current one was eaten
+        setScore((currentScore) => currentScore + 10); // Increase score by 10
+      } else {
+        newSnake.pop(); // Remove the tail unless food has been eaten
+      }
+
       // Check for collisions with walls or self
       if (
         newHead.x < 0 ||
@@ -63,13 +74,13 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
         newHead.y >= boardSize ||
         snake.some((part) => part.x === newHead.x && part.y === newHead.y)
       ) {
-        // Reset the game
         setSnake([
           { x: 2, y: 2 },
           { x: 2, y: 3 },
-        ]);
-        setDirection(Direction.Right);
-        placeFood();
+        ]); // Reset snake
+        setDirection(Direction.Right); // Reset direction
+        placeFood(); // Place new food
+        setScore(0); // Reset score
       } else {
         const newSnake = [newHead, ...snake];
         if (newHead.x === food.x && newHead.y === food.y) {
@@ -111,21 +122,24 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1px solid black',
-      }}
-    >
-      {Array.from({ length: boardSize }, (_, y) => (
-        <div key={y} style={{ display: 'flex' }}>
-          {Array.from({ length: boardSize }, (_, x) => (
-            <div key={x} style={getCellStyle(x, y)} />
-          ))}
-        </div>
-      ))}
-    </div>
+    <>
+      <h2 className="flex">Score: {score}</h2>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          border: '1px solid black',
+        }}
+      >
+        {Array.from({ length: boardSize }, (_, y) => (
+          <div key={y} style={{ display: 'flex' }}>
+            {Array.from({ length: boardSize }, (_, x) => (
+              <div key={x} style={getCellStyle(x, y)} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 

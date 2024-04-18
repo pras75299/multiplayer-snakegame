@@ -11,7 +11,7 @@ export default function Page() {
       <h1 className="text-2xl font-bold text-orange-500 text-center p-4">
         Multiplayer Snake Game
       </h1>
-      <section className="flex justify-center">
+      <section className="flex justify-center flex-col items-center">
         <GameBoard boardSize={20} snake={snake} food={food} />
       </section>
     </>
