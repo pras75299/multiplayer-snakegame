@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { GameBoardProps, Point, Direction } from '../types';
+import { url } from 'inspector';
 const foodIcons = ['🍌', '🍓', '🥭', '🍍', '🍎', '🍊', '🍇'];
 const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   const [score, setScore] = useState<number>(0);
@@ -19,6 +20,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!gameActive) {
+        return;
+      }
+      event.preventDefault();
       switch (event.key) {
         case 'ArrowUp':
           if (direction !== Direction.Down) setDirection(Direction.Up);
@@ -37,18 +42,21 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [direction]);
+  }, [gameActive, direction]);
 
   const startGame = () => {
-    setGameActive(true);
-    setSnake([
-      { x: 2, y: 2 },
-      { x: 2, y: 3 },
-    ]); // Reset snake to initial position
-    setDirection(Direction.Right); // Reset initial direction
-    setScore(0); // Reset score
-    setSpeed(600); // Reset speed
-    placeFood();
+    if (!gameActive) {
+      setGameActive(true);
+      // Reset or initialize all necessary game states
+      setSnake([
+        { x: 2, y: 2 },
+        { x: 2, y: 3 },
+      ]);
+      setDirection(Direction.Right);
+      setScore(0);
+      setSpeed(600);
+      placeFood();
+    }
   };
 
   const gameOver = () => {
@@ -57,6 +65,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   };
 
   useEffect(() => {
+    if (!gameActive) {
+      return;
+    }
     const moveSnake = () => {
       // Clone the head to create a new head
       const newHead: Point = {
@@ -149,14 +160,13 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
   return (
     <>
-      {!gameActive && (
-        <button
-          onClick={startGame}
-          style={{ marginBottom: '20px', backgroundColor: 'red' }}
-        >
-          Start Game
-        </button>
-      )}
+      <button
+        onClick={startGame}
+        disabled={gameActive}
+        className="bg-blue-600 p-2 text-white rounded-sm mb-2 disabled:bg-slate-400 disabled:text-white disabled:cursor-not-allowed"
+      >
+        Start Game
+      </button>
       <h2 className="flex">Score: {score}</h2>
       <h4>Speed: {speed}ms per move</h4>
       <div
@@ -164,6 +174,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
           display: 'flex',
           flexDirection: 'column',
           border: '1px solid black',
+          backgroundColor: '#4CAF50',
+          width: '28%',
+          height: '100%',
         }}
       >
         {Array.from({ length: boardSize }, (_, y) => (
@@ -171,14 +184,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
             {Array.from({ length: boardSize }, (_, x) => (
               <div
                 key={x}
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  border: '1px solid black',
-                }}
+                className="bg-transparent w-6 h-6 flex justify-center items-center"
               >
                 {getCellStyle(x, y)}
               </div>
