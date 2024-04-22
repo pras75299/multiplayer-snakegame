@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { GameBoardProps, Point, Direction } from '../types';
-import { url } from 'inspector';
 const foodIcons = ['🍌', '🍓', '🥭', '🍍', '🍎', '🍊', '🍇'];
 const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   const [score, setScore] = useState<number>(0);
@@ -160,15 +159,24 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
   return (
     <>
-      <button
-        onClick={startGame}
-        disabled={gameActive}
-        className="bg-blue-600 p-2 text-white rounded-sm mb-2 disabled:bg-slate-400 disabled:text-white disabled:cursor-not-allowed"
-      >
-        Start Game
-      </button>
-      <h2 className="flex">Score: {score}</h2>
-      <h4>Speed: {speed}ms per move</h4>
+      <div className="flex flex-col">
+        <button
+          onClick={startGame}
+          disabled={gameActive}
+          className="bg-blue-600 p-2 text-white rounded-sm mb-2 disabled:bg-slate-400 disabled:text-white disabled:cursor-not-allowed"
+        >
+          Start Game
+        </button>
+        <button
+          onClick={gameOver}
+          disabled={!gameActive}
+          className="bg-blue-600 p-2 text-white rounded-sm mb-2 disabled:bg-slate-400 disabled:text-white disabled:cursor-not-allowed"
+        >
+          End Game
+        </button>
+        <h2 className="flex">Score: {score}</h2>
+        <h4>Speed: {speed}ms per move</h4>
+      </div>
       <div
         style={{
           display: 'flex',
