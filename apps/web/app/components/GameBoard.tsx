@@ -159,7 +159,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
 
   return (
     <>
-      <div className="flex flex-col">
+      <div className="flex justify-between flex-col">
         <button
           onClick={startGame}
           disabled={gameActive}
