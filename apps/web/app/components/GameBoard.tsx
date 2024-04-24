@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { GameBoardProps, Point, Direction } from '../types';
 const foodIcons = ['🍌', '🍓', '🥭', '🍍', '🍎', '🍊', '🍇'];
+import GameControls from './GameControl';
+import Score from './Score';
+import GameGrid from './GameGrid';
 const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
   const [score, setScore] = useState<number>(0);
   const [speed, setSpeed] = useState<number>(600);
@@ -152,54 +155,20 @@ const GameBoard: React.FC<GameBoardProps> = ({ boardSize }) => {
     if (isFood) {
       return food.icon;
     } else if (isSnake) {
-      return '🐍'; // Optionally, use an emoji or some mark for the snake as well
+      return '🐍';
     }
     return '';
   };
 
   return (
     <>
-      <div className="flex justify-between flex-col">
-        <button
-          onClick={startGame}
-          disabled={gameActive}
-          className="bg-blue-600 p-2 text-white rounded-sm mb-2 disabled:bg-slate-400 disabled:text-white disabled:cursor-not-allowed"
-        >
-          Start Game
-        </button>
-        <button
-          onClick={gameOver}
-          disabled={!gameActive}
-          className="bg-blue-600 p-2 text-white rounded-sm mb-2 disabled:bg-slate-400 disabled:text-white disabled:cursor-not-allowed"
-        >
-          End Game
-        </button>
-        <h2 className="flex">Score: {score}</h2>
-        <h4>Speed: {speed}ms per move</h4>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          border: '1px solid black',
-          backgroundColor: '#4CAF50',
-          width: '28%',
-          height: '100%',
-        }}
-      >
-        {Array.from({ length: boardSize }, (_, y) => (
-          <div key={y} style={{ display: 'flex' }}>
-            {Array.from({ length: boardSize }, (_, x) => (
-              <div
-                key={x}
-                className="bg-transparent w-6 h-6 flex justify-center items-center"
-              >
-                {getCellStyle(x, y)}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
+      <GameControls
+        gameActive={gameActive}
+        startGame={startGame}
+        gameOver={gameOver}
+      />
+      <Score score={score} speed={speed} />
+      <GameGrid boardSize={boardSize} getCellStyle={getCellStyle} />
     </>
   );
 };
