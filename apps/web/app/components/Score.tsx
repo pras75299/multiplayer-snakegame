@@ -7,8 +7,14 @@ interface ScoreDisplayProps {
 
 const Score: React.FC<ScoreDisplayProps> = ({ score, speed }) => (
   <>
-    <h2 className="flex">Score: {score}</h2>
-    <h4>Speed: {speed}ms per move</h4>
+    <div className="flex">
+      <h2 className="flex mr-4">
+        Score: <span className="text-orange-600 ml-2">{score}</span>
+      </h2>
+      <h4>
+        Speed: <span className="text-orange-600">{speed}ms</span> per move
+      </h4>
+    </div>
   </>
 );
 
