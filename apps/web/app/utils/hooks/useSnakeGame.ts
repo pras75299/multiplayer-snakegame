@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Point, Direction,Food } from '../../types';
+import { Point, Direction, Food } from '../../types';
 
 export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
   const [score, setScore] = useState<number>(0);
@@ -10,17 +10,36 @@ export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
     { x: 2, y: 3 },
   ]);
   const foodIcons: string[] = ['🍌', '🍓', '🥭', '🍍', '🍎', '🍊', '🍇'];
-  const [foodIcon, setFoodIcon] = useState<string>(foodIcons[0] as string);
-  const [food, setFood] = useState<Food>({ position: { x: 5, y: 5 },
-  icon: foodIcons[0] || '🍌' });
+  const [food, setFood] = useState<Food>({
+    position: { x: 5, y: 5 },
+    icon: foodIcons[0] || '🍌'
+  });
   const [direction, setDirection] = useState<Direction>(Direction.Right);
 
+  const placeFood = () => {
+    let newFoodPosition: Point;
+    do {
+      newFoodPosition = {
+        x: Math.floor(Math.random() * boardSize),
+        y: Math.floor(Math.random() * boardSize),
+      };
+    } while (snake.some(part => part.x === newFoodPosition.x && part.y === newFoodPosition.y));
 
-  useEffect(() => {
-    const moveSnake = () => {
-    if (!gameActive || snake.length === 0) return;
-    const head = snake[0];
-    const newHead: Point = { x: head!.x, y: head!.y };
+    const randomIcon = foodIcons[Math.floor(Math.random() * foodIcons.length)] || '🍌';
+    setFood({ position: newFoodPosition, icon: randomIcon });
+  };
+
+  const gameOver = () => {
+    if (!gameActive) return; // Prevents multiple triggers if game is already over
+    console.log('Game Over triggered'); // Debug log
+    setGameActive(false);
+    alert('Game Over! Your score was ' + score);
+  };
+
+  const moveSnake = () => {
+    if (!gameActive) return;
+
+    const newHead: Point = { x: snake[0]!.x, y: snake[0]!.y };
     switch (direction) {
       case Direction.Up: newHead.y -= 1; break;
       case Direction.Down: newHead.y += 1; break;
@@ -28,27 +47,22 @@ export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
       case Direction.Right: newHead.x += 1; break;
     }
 
-    // Check food collision
-    let newSnake = [...snake];
+    if (
+      newHead.x < 0 || newHead.x >= boardSize || newHead.y < 0 || newHead.y >= boardSize ||
+      snake.slice(1).some(part => part.x === newHead.x && part.y === newHead.y) // Check for self collision excluding head
+    ) {
+      gameOver();
+      return;
+    }
+
+    let newSnake = [newHead, ...snake.slice(0, snake.length - 1)];
     if (newHead.x === food.position.x && newHead.y === food.position.y) {
       newSnake = [newHead, ...snake];
       incrementScore();
       placeFood();
-    } else {
-      newSnake = [newHead, ...snake.slice(0, -1)];
-      if (newSnake.some(part => part.x === newHead.x && part.y === newHead.y) ||
-          newHead.x < 0 || newHead.x >= boardSize || newHead.y < 0 || newHead.y >= boardSize) {
-        gameOver();
-      }
     }
     setSnake(newSnake);
-    
   };
-
-
-    const intervalId = setInterval(moveSnake, speed);
-    return () => clearInterval(intervalId);
-  }, [snake, direction, food, gameActive,speed]);
 
   const incrementScore = () => {
     setScore(prev => {
@@ -60,26 +74,8 @@ export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
     });
   };
 
-  const placeFood = () => {
-  let newFoodPosition: Point;
-  do {
-    newFoodPosition = {
-      x: Math.floor(Math.random() * boardSize),
-      y: Math.floor(Math.random() * boardSize),
-    };
-  } while (
-    snake.some(
-      part => part.x === newFoodPosition.x && part.y === newFoodPosition.y
-    )
-  );
-
-  // Ensuring foodIcon is never undefined by providing a default value
-  const randomIcon = foodIcons[Math.floor(Math.random() * foodIcons.length)] || '🍌';
-  setFoodIcon(randomIcon);
-};
-
-
   const startGame = () => {
+    console.log('Starting game');
     setGameActive(true);
     setSnake([{ x: 2, y: 2 }, { x: 2, y: 3 }]);
     setDirection(Direction.Right);
@@ -88,11 +84,12 @@ export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
     placeFood();
   };
 
-  const gameOver = () => {
-    console.log('GameOver triggered', { snake, direction, food });
-  setGameActive(false);
-  alert('Game Over! Your score was ' + score)
-  };
+  useEffect(() => {
+    if (gameActive) {
+      const intervalId = setInterval(moveSnake, speed);
+      return () => clearInterval(intervalId);
+    }
+  }, [gameActive, snake, direction, food, speed]);
 
-  return { snake, food, foodIcon, score, speed, gameActive, direction, setDirection, startGame, gameOver };
+  return { snake, food, score, speed, gameActive, direction, setDirection, startGame, gameOver };
 };
