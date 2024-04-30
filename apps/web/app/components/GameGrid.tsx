@@ -12,8 +12,8 @@ const GameGrid: React.FC<GameGridProps> = ({ boardSize, getCellStyle }) => (
       flexDirection: 'column',
       border: '1px solid black',
       backgroundColor: '#4CAF50',
-      width: '28%',
-      height: '100%',
+      width: '100%',
+      height: 'calc(100vh - 136px)',
     }}
   >
     {Array.from({ length: boardSize }, (_, y) => (
