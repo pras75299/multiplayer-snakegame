@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Point, Direction, Food } from '../../types';
+import { io, Socket } from 'socket.io-client';
 
 export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
   const [score, setScore] = useState<number>(0);
@@ -15,6 +16,29 @@ export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
     icon: foodIcons[0] || '🍌'
   });
   const [direction, setDirection] = useState<Direction>(Direction.Right);
+
+  const socket: Socket = io('http://localhost:8000');
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log(`Connected to server with ID: ${socket.id}`);
+    });
+
+    socket.on('opponent_move', (data: { snake: Point[]; food: Food; score: number; speed: number }) => {
+      setSnake(data.snake);
+      setFood(data.food);
+      setScore(data.score);
+      setSpeed(data.speed);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const placeFood = () => {
     let newFoodPosition: Point;
@@ -62,6 +86,9 @@ export const useSnakeGame = (boardSize: number, initialSpeed: number) => {
       placeFood();
     }
     setSnake(newSnake);
+
+    // Send move to the server
+    socket.emit('move', { snake: newSnake, food, score, speed });
   };
 
   const incrementScore = () => {
